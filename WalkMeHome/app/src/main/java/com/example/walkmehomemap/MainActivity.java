@@ -3,7 +3,16 @@ package com.example.walkmehomemap;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
+
+
+
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
+import com.esri.arcgisruntime.mapping.view.Graphic;
+import com.esri.arcgisruntime.mapping.view.MapView;
 
 import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.FeatureCollection;
@@ -15,15 +24,12 @@ import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
 import com.esri.arcgisruntime.layers.FeatureLayer;
-import com.esri.arcgisruntime.mapping.ArcGISMap;
-import com.esri.arcgisruntime.mapping.Basemap;
-import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
-import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 
 import androidx.annotation.NonNull;
 
-import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -34,6 +40,7 @@ import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +56,20 @@ public class MainActivity extends AppCompatActivity {
 
     //reference to location display object
     private LocationDisplay mLocationDisplay;
+    private GraphicsOverlay mGraphicsOverlay;
+
+    private void createGraphicsOverlay() {
+        mGraphicsOverlay = new GraphicsOverlay();
+        mMapView.getGraphicsOverlays().add(mGraphicsOverlay);
+    }
+
+    private void createGraphics(Point point) {
+        //Point point = new Point(-118.69333917997633, 34.032793670122885, SpatialReferences.getWgs84());
+        SimpleMarkerSymbol pointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.rgb(226, 119, 40), 10.0f);
+        pointSymbol.setOutline(new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.BLUE, 2.0f));
+        Graphic pointGraphic = new Graphic(point, pointSymbol);
+        mGraphicsOverlay.getGraphics().add(pointGraphic);
+    }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -57,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    // mTextMessage.setText(R.string.title_home);
+                    //mTextMessage.setText(R.string.title_home);
                     handleRouteRequest();
                     return true;
                 case R.id.navigation_dashboard:
@@ -75,9 +96,14 @@ public class MainActivity extends AppCompatActivity {
 
     };
 
+//    public MainActivity(GraphicsOverlay mGraphicsOverlay) {
+//        GraphicsOverlay mGraphicsOverlay1 = mGraphicsOverlay;
+//    }
+
     // ----------ICONS --------------------------------
     void handleRouteRequest() {
         Log.i("menu", "Route");
+
     }
 
     void handleMapRequest() {
@@ -87,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
     void handleMarkRequest() {
         Log.i("menu", "Mark");
+        //createGraphics();
     }
 
     private void addReportedDataLayer() {
@@ -97,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         map.getOperationalLayers().add(featureLayer);
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,11 +132,25 @@ public class MainActivity extends AppCompatActivity {
         mMapView = findViewById(R.id.mapView);
         setupMap();
         addReportedDataLayer();
+        createGraphicsOverlay();
+
+        //This is mad because devices that do not have touch cannot use this feature
+        mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, mMapView) {
+            @Override public boolean onSingleTapConfirmed(MotionEvent e) {
+                android.graphics.Point screenPoint = new android.graphics.Point(
+                        Math.round(e.getX()),
+                        Math.round(e.getY()));
+                Point mapPoint = mMapView.screenToLocation(screenPoint);
+                serviceFeatureTable.createFeature();
+                return super.onSingleTapConfirmed(e);
+            }
+        });
 
 
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
         setupLocationDisplay();
     }
 
@@ -221,11 +263,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void addTrailheadsLayer() {
-        String url = "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/";
-        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);
-        FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
-        ArcGISMap map = mMapView.getMap();
-        map.getOperationalLayers().add(featureLayer);
-    }
+//    private void addReportedDataLayer() {
+//        String url = "https://services9.arcgis.com/JXeVxlIbaMZJUnsl/arcgis/rest/services/sample/FeatureServer";
+//        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);
+//        FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
+//        ArcGISMap map = mMapView.getMap();
+//        map.getOperationalLayers().add(featureLayer);
 }
+
