@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WalkMeHomeMap</string>
+    <string name="title_home">Route</string>
+    <string name="title_dashboard">Map</string>
+    <string name="title_notifications">Mark</string>
+    <string name="location_permission_denied">User denied permission for device location.</string>
+</resources>
