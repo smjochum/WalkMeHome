@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private GraphicsOverlay mGraphicsOverlay;
     private ServiceFeatureTable serviceFeatureTable;
 
+
     private void createGraphicsOverlay() {
         mGraphicsOverlay = new GraphicsOverlay();
         mMapView.getGraphicsOverlays().add(mGraphicsOverlay);
@@ -119,32 +120,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void addReportedDataLayer() {
         String url = "https://services9.arcgis.com/JXeVxlIbaMZJUnsl/arcgis/rest/services/sample/FeatureServer";
-        serviceFeatureTable = new ServiceFeatureTable(url);//saved to layer
+        serviceFeatureTable = new ServiceFeatureTable(url);
         FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
-        ArcGISMap map = mMapView.getMap(); //gets map Model (Map and data) MapView (Visualize)
-        map.getOperationalLayers().add(featureLayer); //automatically displays features >>Arr of layers
+        ArcGISMap map = mMapView.getMap();
+        map.getOperationalLayers().add(featureLayer);
     }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); //saves pic of app when not using
-        setContentView(R.layout.activity_main); //ref to view
-        mMapView = findViewById(R.id.mapView); //
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mMapView = findViewById(R.id.mapView);
         setupMap();
         addReportedDataLayer();
         createGraphicsOverlay();
 
         //This is mad because devices that do not have touch cannot use this feature
         mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, mMapView) {
-            @Override public boolean onSingleTapConfirmed(MotionEvent e) {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
                 android.graphics.Point screenPoint = new android.graphics.Point(
                         Math.round(e.getX()),
                         Math.round(e.getY()));
                 Point mapPoint = mMapView.screenToLocation(screenPoint);
-                Feature feature = serviceFeatureTable.createFeature();
-                feature.setGeometry(mapPoint);
-                serviceFeatureTable.addFeatureAsync(feature);
+                createGraphics(mapPoint);
+//                serviceFeatureTable.createFeature();
                 return super.onSingleTapConfirmed(e);
             }
         });
