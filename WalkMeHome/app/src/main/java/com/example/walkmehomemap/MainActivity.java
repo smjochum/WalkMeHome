@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     //reference to location display object
     private LocationDisplay mLocationDisplay;
     private GraphicsOverlay mGraphicsOverlay;
+    private ServiceFeatureTable serviceFeatureTable;
 
     private void createGraphicsOverlay() {
         mGraphicsOverlay = new GraphicsOverlay();
@@ -118,18 +119,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void addReportedDataLayer() {
         String url = "https://services9.arcgis.com/JXeVxlIbaMZJUnsl/arcgis/rest/services/sample/FeatureServer";
-        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);
+        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);//saved to layer
         FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
-        ArcGISMap map = mMapView.getMap();
-        map.getOperationalLayers().add(featureLayer);
+        ArcGISMap map = mMapView.getMap(); //gets map Model (Map and data) MapView (Visualize)
+        map.getOperationalLayers().add(featureLayer); //automatically displays features >>Arr of layers
     }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mMapView = findViewById(R.id.mapView);
+        super.onCreate(savedInstanceState); //saves pic of app when not using
+        setContentView(R.layout.activity_main); //ref to view
+        mMapView = findViewById(R.id.mapView); //
         setupMap();
         addReportedDataLayer();
         createGraphicsOverlay();
@@ -141,7 +142,9 @@ public class MainActivity extends AppCompatActivity {
                         Math.round(e.getX()),
                         Math.round(e.getY()));
                 Point mapPoint = mMapView.screenToLocation(screenPoint);
-                serviceFeatureTable.createFeature();
+                Feature feature = serviceFeatureTable.createFeature();
+                feature.setGeometry(mapPoint);
+                serviceFeatureTable.addFeatureAsync(feature);
                 return super.onSingleTapConfirmed(e);
             }
         });
