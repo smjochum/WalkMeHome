@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void addReportedDataLayer() {
         String url = "https://services9.arcgis.com/JXeVxlIbaMZJUnsl/arcgis/rest/services/sample/FeatureServer";
-        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);//saved to layer
+        serviceFeatureTable = new ServiceFeatureTable(url);//saved to layer
         FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
         ArcGISMap map = mMapView.getMap(); //gets map Model (Map and data) MapView (Visualize)
         map.getOperationalLayers().add(featureLayer); //automatically displays features >>Arr of layers
